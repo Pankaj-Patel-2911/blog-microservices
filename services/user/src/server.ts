@@ -11,10 +11,7 @@ app.use(express.json());
 
 connectDb();
 
-// test route
-app.get("/", (req, res) => {
-  res.send("Server working");
-});
+
 
 app.use("/api/v1", userRoutes);
 

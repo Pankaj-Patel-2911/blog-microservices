@@ -1,14 +1,14 @@
 import  express  from "express";
-import { loginUser, myProfile } from "../controllers/user.js";
+import { getUserProfile, loginUser, myProfile, updateUser } from "../controllers/user.js";
 import { isAuth } from "../middleware/isAuth.js";
 
 const router=express.Router();
 
 router.post("/login",loginUser);
 router.get("/me",isAuth,myProfile);
+router.get("/user/:id",getUserProfile);
+router.put("/user/update",isAuth,updateUser);
 
-router.get("/test", (req, res) => {
-    res.send("User route working");
-});
+
 
 export default router;

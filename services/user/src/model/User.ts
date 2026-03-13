@@ -23,6 +23,9 @@ const schema:Schema<IUser> = new Schema({
         type:String,
         
     },
+    instagram:{
+        type:String,
+    },
     linkedin:{
         type:String,
         
