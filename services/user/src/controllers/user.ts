@@ -1,11 +1,11 @@
-import type { Request, Response } from "express";
 import User from "../model/User.js";
 import jwt from "jsonwebtoken";
+import TryCatch from "../utils/TryCatch.js";
+import type { AuthenticatedRequest } from "../middleware/isAuth.js";
 
-export const loginUser = async (req: Request, res: Response) => {
-    try {
-        const { email, name, image } = req.body;
-        console.log(req.body);
+export const loginUser=TryCatch(async(req,res)=>{
+    const { email, name, image } = req.body;
+        
 
         let user = await User.findOne({ email });
 
@@ -18,7 +18,7 @@ export const loginUser = async (req: Request, res: Response) => {
         }
 
         const token = jwt.sign(
-            { userId: user._id },
+            { user: user._id },
             process.env.JWT_SEC as string,
             {
                 expiresIn: "6d",
@@ -30,10 +30,13 @@ export const loginUser = async (req: Request, res: Response) => {
             user,
             token,
         });
+})
 
-    } catch (error: any) {
-        res.status(500).json({
-            message: error.message,
-        });
-    }
-};
+
+
+export const myProfile=TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const user = await User.findById(req.user);
+    console.log(user);
+    res.json(user);
+
+})
