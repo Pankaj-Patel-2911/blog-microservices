@@ -20,7 +20,7 @@ async function initDB() {
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS blogs (
-        id SERIAL PRIMARY KEY,
+        blogid SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description VARCHAR(255) NOT NULL,
         blogcontent TEXT NOT NULL,
@@ -32,7 +32,7 @@ async function initDB() {
     `;
    await sql`
   CREATE TABLE IF NOT EXISTS comments (
-    id SERIAL PRIMARY KEY,
+    commentid SERIAL PRIMARY KEY,
     comment VARCHAR(255) NOT NULL,
     userid VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
@@ -43,7 +43,7 @@ async function initDB() {
 
 await sql`
   CREATE TABLE IF NOT EXISTS savedblogs (
-    id SERIAL PRIMARY KEY,
+    savedblogid SERIAL PRIMARY KEY,
     
     userid VARCHAR(255) NOT NULL,
     

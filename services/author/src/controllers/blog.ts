@@ -8,28 +8,24 @@ export const createBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
   const { title, description, blogcontent, category } = req.body;
   const file = req.file;
 
-  
   if (!title || !description || !blogcontent || !category) {
     return res.status(400).json({
       message: "All fields are required",
     });
   }
 
-  
   if (!file) {
     return res.status(400).json({
       message: "No file to upload",
     });
   }
 
-  
- if (!req.user) {
-  return res.status(401).json({
-    message: "Unauthorized",
-  });
-}
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
 
-  
   const fileBuffer = getBuffer(file);
 
   if (!fileBuffer || !fileBuffer.content) {
@@ -38,22 +34,19 @@ export const createBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
     });
   }
 
-  
   const cloud = await cloudinary.v2.uploader.upload(fileBuffer.content, {
     folder: "blogs",
   });
 
-  
   const result = await sql`
     INSERT INTO blogs (title, description, image, blogcontent, category, author) 
     VALUES (${title}, ${description}, ${cloud.secure_url}, ${blogcontent}, ${category}, ${req.user}) 
     RETURNING *
   `;
 
-  
   res.status(201).json({
     message: "Blog Created Successfully",
-    blog:  result[0],
+    blog: result[0],
   });
 });
 
@@ -62,7 +55,7 @@ export const updateBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
   const { title, description, blogcontent, category } = req.body;
   const file = req.file;
 
-  const blog = await sql`SELECT * FROM blogs WHERE id = ${id}`;
+  const blog = await sql`SELECT * FROM blogs WHERE blogid = ${id}`;
 
   if (!blog.length) {
     return res.status(404).json({
@@ -104,12 +97,40 @@ export const updateBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
       blogcontent = ${blogcontent || existingBlog.blogcontent},
       category = ${category || existingBlog.category},
       image = ${imageUrl}
-    WHERE id = ${id}
+    WHERE blogid = ${id}
     RETURNING *
   `;
 
   res.json({
     message: "Blog updated successfully",
     blog: updatedBlog[0],
+  });
+});
+
+export const deleteBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+
+  const blog = await sql`SELECT * FROM blogs WHERE blogid = ${id}`;
+
+  if (!blog.length) {
+    return res.status(404).json({
+      message: "No blog with this id",
+    });
+  }
+
+  const existingBlog = blog[0]!;
+
+  if (existingBlog.author !== req.user) {
+    return res.status(401).json({
+      message: "You are not the author of this blog",
+    });
+  }
+
+  await sql`DELETE FROM savedblogs WHERE blogid = ${id}`;
+  await sql`DELETE FROM comments WHERE blogid = ${id}`;
+  await sql`DELETE FROM blogs WHERE blogid = ${id}`;
+
+  res.json({
+    message: "Blog Deleted Successfully",
   });
 });
