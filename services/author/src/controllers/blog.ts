@@ -56,3 +56,60 @@ export const createBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
     blog:  result[0],
   });
 });
+
+export const updateBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+  const { title, description, blogcontent, category } = req.body;
+  const file = req.file;
+
+  const blog = await sql`SELECT * FROM blogs WHERE id = ${id}`;
+
+  if (!blog.length) {
+    return res.status(404).json({
+      message: "No blog with this id",
+    });
+  }
+
+  const existingBlog = blog[0]!;
+
+  if (existingBlog.author !== req.user) {
+    return res.status(401).json({
+      message: "You are not the author of this blog",
+    });
+  }
+
+  let imageUrl = existingBlog.image;
+
+  if (file) {
+    const fileBuffer = getBuffer(file);
+
+    if (!fileBuffer || !fileBuffer.content) {
+      return res.status(400).json({
+        message: "Failed to process image",
+      });
+    }
+
+    const cloud = await cloudinary.v2.uploader.upload(fileBuffer.content, {
+      folder: "blogs",
+    });
+
+    imageUrl = cloud.secure_url;
+  }
+
+  const updatedBlog = await sql`
+    UPDATE blogs 
+    SET 
+      title = ${title || existingBlog.title},
+      description = ${description || existingBlog.description},
+      blogcontent = ${blogcontent || existingBlog.blogcontent},
+      category = ${category || existingBlog.category},
+      image = ${imageUrl}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+
+  res.json({
+    message: "Blog updated successfully",
+    blog: updatedBlog[0],
+  });
+});
