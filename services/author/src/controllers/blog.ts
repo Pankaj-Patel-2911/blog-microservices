@@ -3,6 +3,7 @@ import type { AuthenticatedRequest } from "../middleware/isAuth.js";
 import getBuffer from "../utils/dataUri.js";
 import cloudinary from "cloudinary";
 import { sql } from "../utils/db.js";
+import { invalidateChacheJob } from "../utils/rabbitMq.js";
 
 export const createBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
   const { title, description, blogcontent, category } = req.body;
@@ -43,6 +44,7 @@ export const createBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
     VALUES (${title}, ${description}, ${cloud.secure_url}, ${blogcontent}, ${category}, ${req.user}) 
     RETURNING *
   `;
+   await invalidateChacheJob(["blogs:*"]);
 
   res.status(201).json({
     message: "Blog Created Successfully",
@@ -100,6 +102,7 @@ export const updateBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
     WHERE blogid = ${id}
     RETURNING *
   `;
+   await invalidateChacheJob(["blogs:*",`blogs:${id}`]);
 
   res.json({
     message: "Blog updated successfully",
@@ -129,6 +132,8 @@ export const deleteBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
   await sql`DELETE FROM savedblogs WHERE blogid = ${id}`;
   await sql`DELETE FROM comments WHERE blogid = ${id}`;
   await sql`DELETE FROM blogs WHERE blogid = ${id}`;
+
+  await invalidateChacheJob(["blogs:*",`blogs:${id}`]);
 
   res.json({
     message: "Blog Deleted Successfully",
