@@ -76,40 +76,30 @@ export const getUserProfile = TryCatch(async (req, res) => {
 });
 
 export const updateUser = TryCatch(async (req: AuthenticatedRequest, res) => {
+  const { name, instagram, linkedin, bio } = req.body;
 
-    const { name, instagram, linkedin, bio } = req.body;
+  const updateData: any = {};
+  if (name !== undefined) updateData.name = name;
+  if (instagram !== undefined) updateData.instagram = instagram;
+  if (linkedin !== undefined) updateData.linkedin = linkedin;
+  if (bio !== undefined) updateData.bio = bio;
 
-    const user = await User.findByIdAndUpdate(
-        req.user,
-        {
-            name,
-            instagram,
-            linkedin,
-            bio,
-        },
-        { new: true }
-    );
-     if (!user) {
-        res.status(404).json({
-            message: "User not found",
-        });
-        return;
-    }
+  const user = await User.findByIdAndUpdate(
+    req.user,
+    updateData,
+    { new: true }
+  );
 
-    const token = jwt.sign(
-        { user: user._id },
-        process.env.JWT_SEC as string,
-        {
-            expiresIn: "6d",
-        }
-    );
-
-    res.json({
-        message: "User Updated",
-        token,
-        user,
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
     });
+  }
 
+  res.json({
+    message: "User Updated",
+    user,
+  });
 });
 
 export const updateProfilePic = TryCatch(async (req: AuthenticatedRequest, res) => {
