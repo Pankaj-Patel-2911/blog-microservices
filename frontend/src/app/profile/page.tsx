@@ -179,7 +179,7 @@ const Profile = () => {
                   target="_blank"
                   className="cursor-pointer text-pink-500 hover:scale-110"
                 >
-                  <FaInstagram />
+                  <FaInstagram className="cursor-pointer"/>
                 </a>
               )}
 
@@ -189,7 +189,7 @@ const Profile = () => {
                   target="_blank"
                   className="cursor-pointer text-blue-600 hover:scale-110"
                 >
-                  <FaLinkedin />
+                  <FaLinkedin className="cursor-pointer" />
                 </a>
               )}
 
@@ -199,7 +199,7 @@ const Profile = () => {
                   target="_blank"
                   className="cursor-pointer text-blue-500 hover:scale-110"
                 >
-                  <FaFacebook />
+                  <FaFacebook className="cursor-pointer" />
                 </a>
               )}
 
@@ -236,7 +236,7 @@ const Profile = () => {
                   setOriginalData({ bio, instagram, linkedin, facebook });
                   setEditMode(true);
                 }}
-                className="bg-gray-800 text-white px-4 py-2 rounded-lg"
+                className="bg-gray-800 text-white px-4 py-2 rounded-lg cursor-pointer"
               >
                 Edit Profile
               </button>
@@ -244,14 +244,14 @@ const Profile = () => {
               <>
                 <button
                   onClick={updateProfile}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer"
                 >
                   Save
                 </button>
 
                 <button
                   onClick={handleCancel}
-                  className="bg-gray-300 px-4 py-2 rounded-lg"
+                  className="bg-gray-300 px-4 py-2 rounded-lg cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -259,15 +259,15 @@ const Profile = () => {
             )}
 
             <button
-              onClick={() => router.push("/author/create")}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg"
+              onClick={() => router.push("/blog/new")}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
             >
               Add Blog
             </button>
 
             <button
               onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg"
+              className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer"
             >
               Logout
             </button>

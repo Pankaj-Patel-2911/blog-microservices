@@ -23,7 +23,9 @@ export default function RootLayout({
     >
       <body>
         <AppProvider><Navbar/> 
-        {children}</AppProvider>
+        <main className="pt-20">
+            {children}
+          </main></AppProvider>
         </body>
     </html>
   );
