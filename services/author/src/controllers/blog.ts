@@ -340,3 +340,81 @@ Return ONLY the corrected HTML string.
     });
   }
 });
+export const aiSummaryResponse = TryCatch(async (req, res) => {
+  const { blog } = req.body;
+
+  if (!blog) {
+    return res.status(400).json({
+      message: "Blog content is required",
+    });
+  }
+
+  // 🔥 Remove HTML tags for better summarization
+  const plainText = blog.replace(/<[^>]*>/g, " ").trim();
+
+  if (!plainText) {
+    return res.status(400).json({
+      message: "Invalid blog content",
+    });
+  }
+
+  const prompt = `
+Summarize the following blog content in a clear and concise way.
+
+Rules:
+- Maximum 40-60 words
+- Easy to read
+- Do NOT include markdown, symbols, or extra explanation
+- Return ONLY the summary
+
+Blog:
+${plainText}
+`;
+
+  try {
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY!,
+    });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+    });
+
+    let result = response.text;
+
+    if (!result) {
+      return res.status(400).json({
+        message: "AI did not return a response",
+      });
+    }
+
+    // 🔥 Clean response
+    result = result
+      .replace(/[*_`~]/g, "")
+      .replace(/[\r\n]+/g, " ")
+      .replace(/["']/g, "")
+      .trim();
+
+    return res.json({
+      summary: result,
+    });
+
+  } catch (error: any) {
+    console.error("AI Summary Error:", error);
+
+    const status = error?.status || error?.response?.status;
+
+    // 🔥 Handle busy AI
+    if (status === 503 || status === 429) {
+      return res.status(200).json({
+        aiBusy: true,
+        message: "AI is busy right now. Please try again.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "AI service failed",
+    });
+  }
+});

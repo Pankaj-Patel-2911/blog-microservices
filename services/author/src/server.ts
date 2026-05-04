@@ -49,7 +49,7 @@ async function initDB() {
     comment VARCHAR(255) NOT NULL,
     userid VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL,
-    blogid VARCHAR(255) NOT NULL,
+    blogid INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `;
@@ -60,8 +60,17 @@ await sql`
     
     userid VARCHAR(255) NOT NULL,
     
-    blogid VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    blogid INTEGER NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT unique_user_blog UNIQUE (userid, blogid),
+
+    -- 🔥 Foreign Key (important)
+    CONSTRAINT fk_blog
+    FOREIGN KEY (blogid)
+    REFERENCES blogs(blogid)
+    ON DELETE CASCADE
   );
 `;
 

@@ -2,6 +2,9 @@ import { redisClient } from "../server.js";
 import TryCatch from "../utils/TryCatch.js";
 import { sql } from "../utils/db.js";
 import axios from 'axios';
+import type { AuthenticatedRequest } from "../middleware/isAuth.js";
+
+
 export const getAllBlogs = TryCatch(async (req, res) => {
   const{ searchQuery = "",
    category = ""}=req.query;
@@ -55,6 +58,26 @@ export const getAllBlogs = TryCatch(async (req, res) => {
   });
 });
 
+export const getBlogsByAuthor = TryCatch(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({
+      message: "Author ID is required",
+    });
+  }
+
+  const blogs = await sql`
+    SELECT * FROM blogs
+    WHERE author = ${id}
+    ORDER BY created_at DESC
+  `;
+
+  res.json({
+    blogs,
+  });
+});
+
 export const getSingleBlog = TryCatch(async (req, res) => {
   const { id } = req.params;
 
@@ -96,4 +119,28 @@ export const getSingleBlog = TryCatch(async (req, res) => {
   });
 
   res.json(responseData);
+});
+
+export const deleteBlog = TryCatch(async (req: AuthenticatedRequest, res) => {
+  const { id } = req.params;
+
+  const blog = await sql`
+    SELECT * FROM blogs WHERE blogid = ${id}
+  `;
+
+  const blogData = blog[0];
+
+  if (!blogData) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
+
+  if (blogData.author !== req.user) {
+    return res.status(403).json({ message: "Not allowed" });
+  }
+
+  await sql`
+    DELETE FROM blogs WHERE blogid = ${id}
+  `;
+
+  res.json({ message: "Blog deleted" });
 });

@@ -3,16 +3,16 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Home, Bookmark, LogIn, User } from "lucide-react";
+import { Menu, X, Home, Bookmark, LogIn, User, FileText } from "lucide-react";
 import { useAppData } from "@/context/AppContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { isAuth, user } = useAppData(); // ✅ clean usage
+  const { isAuth, user } = useAppData();
 
   return (
-    <nav className="fixed top-0 left-0 w-full  bg-white shadow-md p-4 z-50 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 w-full bg-white shadow-md p-4 z-50 backdrop-blur-md">
       <div className="container mx-auto flex justify-between items-center">
 
         {/* Logo */}
@@ -38,20 +38,31 @@ const Navbar = () => {
             </Link>
           </li>
 
-          {/* Saved Blogs */}
-          <li>
-            <Link href="/blog/saved" className="flex items-center gap-2 hover:text-blue-500 group">
-              <Bookmark className="w-5 h-5 group-hover:text-blue-500" />
-              <span>Saved Blogs</span>
-            </Link>
-          </li>
+          {/* 🔥 Show ONLY if logged in */}
+          {isAuth && user && (
+            <>
+              {/* My Blogs */}
+              <li>
+                <Link href="/blog/my" className="flex items-center gap-2 hover:text-blue-500 group">
+                  <FileText className="w-5 h-5 group-hover:text-blue-500" />
+                  <span>My Blogs</span>
+                </Link>
+              </li>
+
+              {/* Saved Blogs */}
+              <li>
+                <Link href="/blog/saved" className="flex items-center gap-2 hover:text-blue-500 group">
+                  <Bookmark className="w-5 h-5 group-hover:text-blue-500" />
+                  <span>Saved Blogs</span>
+                </Link>
+              </li>
+            </>
+          )}
 
           {/* Profile / Login */}
           <li>
             {isAuth && user ? (
               <Link href="/profile" className="flex items-center gap-2 group">
-
-                {/* Avatar if available */}
                 {user.image ? (
                   <img
                     src={user.image}
@@ -61,7 +72,6 @@ const Navbar = () => {
                 ) : (
                   <User className="w-6 h-6 text-gray-700 group-hover:text-blue-500" />
                 )}
-
               </Link>
             ) : (
               <Link href="/login" className="flex items-center gap-2 hover:text-blue-500 group">
@@ -86,12 +96,24 @@ const Navbar = () => {
               </Link>
             </li>
 
-            <li>
-              <Link href="/blog/saved" onClick={() => setIsOpen(false)} className="flex items-center gap-2 hover:text-blue-500">
-                <Bookmark className="w-5 h-5" />
-                Saved Blogs
-              </Link>
-            </li>
+            {/* 🔥 Only if logged in */}
+            {isAuth && user && (
+              <>
+                <li>
+                  <Link href="/blog/my" onClick={() => setIsOpen(false)} className="flex items-center gap-2 hover:text-blue-500">
+                    <FileText className="w-5 h-5" />
+                    My Blogs
+                  </Link>
+                </li>
+
+                <li>
+                  <Link href="/blog/saved" onClick={() => setIsOpen(false)} className="flex items-center gap-2 hover:text-blue-500">
+                    <Bookmark className="w-5 h-5" />
+                    Saved Blogs
+                  </Link>
+                </li>
+              </>
+            )}
 
             <li>
               {isAuth && user ? (
